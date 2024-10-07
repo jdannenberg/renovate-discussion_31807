@@ -1,0 +1,32 @@
+services:
+  renovate:
+    image: renovate/renovate:38-full@sha256:1819a9207a823fb3396b4c584696e66073d9916b9c14ca97d84441cbebbdf1dc
+    container_name: renovate
+    restart: no # only ofelia starts renovate
+    env_file: ./renovate.env
+    networks:
+      - renovate-internal
+    mem_limit: 2g
+    memswap_limit: 4g
+
+  # jobscheduler
+  ofelia:
+    restart: unless-stopped
+    image: mcuadros/ofelia:v3.0.8@sha256:c36048db84b0b54d47a689f723f6f5d19281ac4b87d90fa6433a4582b93f1a5b
+    container_name: renovate-ofelia
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./jobs.ini:/etc/ofelia/config.ini"
+    networks:
+      - renovate-internal
+    mem_limit: 300m
+    memswap_limit: 600m
+
+
+networks:
+  renovate-internal:
+    name: renovate-internal
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: <ipv6_subnet>
